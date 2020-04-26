@@ -2,14 +2,16 @@
 <html>
 	<head>
 		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width; maximum-scale=1; minimum-scale=1;" />
+		<meta name="viewport" content="width=device-width, maximum-scale=1, minimum-scale=1" />
 		<title>ADFF - Advanced Duplicate File Finder</title>
 		<link rel="stylesheet" href="third-party/bootstrap.min.css">
 		<!--[if lt IE 9]>
 			<script src="third-party/html5shiv.js"></script>
 		<![endif]-->
+		<script src="third-party/jquery-3.5.0.min.js"></script>
+		<script src="third-party/angular.min.js"></script>
 	</head>
-	<body>
+	<body ng-app="adff" ng-controller="MainController">
 		<div class="container">
 			<div class="row">
 				<div class="col">
@@ -25,24 +27,18 @@
 				<div class="col">
 					<ul class="list-group">
 						<li class="list-group-item d-flex justify-content-between align-items-center">
-							<input type="text" name="value" style="width: 60%;" placeholder="Add a directory - /example/directory/path" />
-							<a href="#" title="Click to add directory" class="badge badge-primary badge-pill">Add</a>
+							<input id="newDirectory" ng-model="newDirectory" type="text" name="value" style="width: 60%;" placeholder="Add a directory - /example/directory/path" />
+							<a ng-click="addDir()" href="javascript:void(0);" title="Click to add directory" class="badge badge-primary badge-pill">Add</a>
 						</li>
-						<li class="list-group-item d-flex justify-content-between align-items-center">
-							/home/ingo
-							<a href="#" title="Click to delete directory" class="badge badge-primary badge-pill">Delete</a>
+						<li ng-repeat="item in directories | orderBy: ''" class="list-group-item d-flex justify-content-between align-items-center">
+							{{ item }}
+							<a ng-click="rmDir(item)" href="javascript:void(0);" title="Click to delete directory" class="badge badge-primary badge-pill">Delete</a>
 						</li>
-						<li class="list-group-item d-flex justify-content-between align-items-center">
-							/home/dominic
-							<a href="#" title="Click to delete directory" class="badge badge-primary badge-pill">Delete</a>
-						</li>
-						<li class="list-group-item d-flex justify-content-between align-items-center">
-							/var/www/html/adff
-							<a href="#" title="Click to delete directory" class="badge badge-primary badge-pill">Delete</a>
-						</li>
+
 					</ul>
 				</div>
 			</div>
 		</div>
+		<script src="js/app.js"></script>
 	</body>
 </html>
