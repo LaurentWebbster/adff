@@ -32,10 +32,40 @@
 						</li>
 						<li ng-repeat="item in directories | orderBy: ''" class="list-group-item d-flex justify-content-between align-items-center">
 							{{ item }}
+							<a ng-click="addCrawl(item)" href="javascript:void(0);" title="Click to crawl directory" class="badge badge-primary badge-pill">Crawl</a>
 							<a ng-click="rmDir(item)" href="javascript:void(0);" title="Click to delete directory" class="badge badge-primary badge-pill">Delete</a>
 						</li>
-
 					</ul>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col">
+					<h2 class="m-1">&nbsp;</h2>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col">
+					<h2 class="m-3">Scheduled for Crawling</h2>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col">
+					<table class="table table-sm">
+						<tr>
+							<th>Path</th>
+							<th>Created</th>
+							<th>Started</th>
+							<th>Finished</th>
+							<th>Status</th>
+						</tr>
+						<tr ng-repeat="item in crawls | orderBy: created">
+							<td>{{ item.name }}</td>
+							<td>{{ item.created }}</td>
+							<td>{{ item.started }}</td>
+							<td>{{ item.finished }}</td>
+							<td>{{ item.status }}</td>
+						</tr>
+					</table>
 				</div>
 			</div>
 		</div>

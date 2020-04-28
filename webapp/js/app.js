@@ -2,11 +2,35 @@ var app = angular.module('adff', []);
 var url = "rest.php";
 
 app.controller('MainController', function($scope, $http) {
-	
-	$scope.getDirectories = function() {
+
+	$scope.getCrawl = function() {
+		$http.get(url + '?function=getCrawl').then(function(response) {
+			$scope.crawls = response.data['crawls'];
+		});
+	};
+
+	$scope.getDir = function() {
 		$http.get(url + '?function=getDir').then(function(response) {
 			$scope.directories = response.data['directories'];
 		});
+	};
+
+	$scope.addCrawl = function(crawl) {
+		var data = $.param({ function: 'addCrawl', name: crawl });
+		$http({
+			url: url,
+			method: 'POST',
+			data: data,
+			headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+		})
+		.then(function(response) {
+			if(response.data.message == "already_there") {
+				alert("Crawling is already scheduled for this path.");
+			} else {
+				$scope.getCrawl();
+			}
+		})
+		return false;
 	};
 
 	$scope.addDir = function() {
@@ -18,7 +42,7 @@ app.controller('MainController', function($scope, $http) {
 			headers: {'Content-Type': 'application/x-www-form-urlencoded'}
 		})
 		.then(function(response) {
-			$scope.getDirectories();
+			$scope.getDir();
 		})
 		document.getElementById('newDirectory').value = '';
 		return false;
@@ -33,11 +57,12 @@ app.controller('MainController', function($scope, $http) {
 			headers: {'Content-Type': 'application/x-www-form-urlencoded'}
 		})
 		.then(function(response) {
-			$scope.getDirectories();
+			$scope.getDir();
 		});
 	}
 
 	// Initial load
-	$scope.getDirectories();
+	$scope.getDir();
+	$scope.getCrawl();
 
 });

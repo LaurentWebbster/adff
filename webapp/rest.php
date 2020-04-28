@@ -13,7 +13,38 @@
 	require_once('third-party/mongodb/Operation/DeleteOne.php');
 	require_once('third-party/mongodb/Operation/Delete.php');
 	require_once('third-party/mongodb/DeleteResult.php');
-	
+
+
+	function addCrawl($params) {
+		global $mongoDB;
+		global $data;
+		error_log("addCrawl: ".json_encode($params));
+		if(isset($params['name'])) {
+			try {
+				$dataset = $mongoDB->crawl->find();
+			}
+			catch ( Exception $e ) {
+				$dataset = [];
+			}
+			$already_there = false;
+			foreach($dataset as $document) {
+				if ($document['name'] == $params['name']) {
+					$already_there = true;
+				}
+			}
+			if ($already_there) {
+				$data['message'] = 'already_there';
+			} else {
+				$data['message'] = 'ok';
+				try {
+					$mongoDB->crawl->insertOne(['name' => $_POST['name'], 'created' => date('Y-m-d H:i:s'), 'status' => 'new']);
+				}
+				catch ( Exception $e ) {
+					$data['error'] = $e->getMessage();
+				}
+			}
+		}
+	}
 
 	function addDir($params) {
 		global $mongoCollection;
@@ -35,6 +66,22 @@
 		}
 	}
 
+	function getCrawl($params) {
+		error_log("getCrawl: ".json_encode($params));
+		global $mongoDB;
+		global $data;
+		try {
+			$dataset = $mongoDB->crawl->find();
+		}
+		catch ( Exception $e ) {
+			$dataset = [];
+		}
+
+		foreach($dataset as $document) {
+			$data['crawls'][] = $document;
+		}
+	}
+
 	function getDir($params) {
 		global $mongoCollection;
 		global $data;
@@ -44,6 +91,18 @@
 			//array_push($data, $document['name']);
 			$data['directories'][] = $document['name'];
 		}
+	}
+
+	function remCrawl($params) {
+		global $mongoCollection;
+		global $data;
+		if(isset($params['name'])) {
+			$mongoCollection->deleteOne(['name' => $params['name']]);
+			$data['message'] = "ok";
+		} else {
+			$data['message'] = "error";
+		}
+		error_log("remCrawl: ".json_encode($params));
 	}
 
 	function remDir($params) {
@@ -61,18 +120,22 @@
 
 	try {
 	    $mongo = new MongoDB\Client("mongodb://localhost:27017"); // connect
-	    $mongoCollection = $mongo->adff->directory;
+			$mongoDB = $mongo->adff;
+			$mongoCollection = $mongo->adff->directory;
 	}
 	catch ( MongoConnectionException $e )
 	{
 	    echo '<p>Couldn\'t connect to mongodb, is the "mongo" process running?</p>';
 	    exit();
 	}
-	// /etc/php/7.2/apache2/php.ini
 
 	$data = [];
 
-	$functions = ["getDir", "addDir", "remDir"];
+	$functions = [
+		"getDir", "addDir", "remDir",
+		"getCrawl", "addCrawl", "remCrawl"
+
+	];
 
 	switch($_SERVER['REQUEST_METHOD']) {
 		case 'GET':
@@ -81,6 +144,7 @@
 				call_user_func($_GET['function'], $_GET);
 			} else {
 				$data['message'] = 'Error: Invalid data';
+				error_log("Invalid function in GET request: ".json_encode($_GET));
 			}
 			break;
 		case 'HEAD':
@@ -92,6 +156,7 @@
 				call_user_func($_POST['function'], $_POST);
 			} else {
 				$data['message'] = 'Error: Invalid data';
+				error_log("Invalid function in POST request: ".json_encode($_POST));
 			}
 			break;
 		case 'PUT':
@@ -103,8 +168,9 @@
 			break;
 		default:
 			$data['method'] = 'unknown: '.$_SERVER['REQUEST_METHOD'];
+			error_log("Unknown HTML method: ".$_SERVER['REQUEST_METHOD']);
 			break;
 	}
-	
+
 	echo json_encode($data, JSON_PRETTY_PRINT);
 ?>

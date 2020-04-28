@@ -49,8 +49,8 @@ print('### Start ###')
 file_count = 0
 
 config = configparser.ConfigParser(allow_no_value=True)
+config.optionxform=str
 config.read("config.ini")
-
 
 client = MongoClient(config['database']['url'])
 db = client[config['database']['db']]
