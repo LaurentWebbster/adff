@@ -15,6 +15,26 @@ app.controller('MainController', function($scope, $http) {
 		});
 	};
 
+	$scope.getDup = function() {
+		$http.get(url + '?function=getDup').then(function(response) {
+			$scope.duplicates = response.data['duplicates'];
+		});
+	};
+
+	$scope.clrCrawlsAndDups = function() {
+		var data = $.param({ function: 'clrCrawlsAndDups' });
+		$http({
+			url: url,
+			method: 'POST',
+			data: data,
+			headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+		})
+		.then(function(response) {
+			$scope.getCrawl();
+			$scope.getDup();
+		});
+	}
+
 	$scope.addCrawl = function(crawl) {
 		var data = $.param({ function: 'addCrawl', name: crawl });
 		$http({
@@ -64,5 +84,5 @@ app.controller('MainController', function($scope, $http) {
 	// Initial load
 	$scope.getDir();
 	$scope.getCrawl();
-
+	$scope.getDup();
 });

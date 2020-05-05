@@ -13,6 +13,8 @@
 	require_once('third-party/mongodb/Operation/DeleteOne.php');
 	require_once('third-party/mongodb/Operation/Delete.php');
 	require_once('third-party/mongodb/DeleteResult.php');
+	require_once('third-party/mongodb/Operation/Aggregate.php');
+	require_once('third-party/mongodb/Operation/DropCollection.php');
 
 
 	function addCrawl($params) {
@@ -37,7 +39,8 @@
 			} else {
 				$data['message'] = 'ok';
 				try {
-					$mongoDB->crawl->insertOne(['name' => $_POST['name'], 'created' => date('Y-m-d H:i:s'), 'status' => 'new']);
+					$mondo_date = new MongoDB\BSON\UTCDateTime(new DateTime());
+					$mongoDB->crawl->insertOne(['name' => $_POST['name'], 'created' => $mondo_date, 'status' => 'new']);
 				}
 				catch ( Exception $e ) {
 					$data['error'] = $e->getMessage();
@@ -66,6 +69,13 @@
 		}
 	}
 
+	function clrCrawlsAndDups($params) {
+		error_log("clrCrawlsAndDups: ".json_encode($params));
+		global $mongoDB;
+		$mongoDB->crawl->drop();
+		$mongoDB->file->drop();
+	}
+
 	function getCrawl($params) {
 		error_log("getCrawl: ".json_encode($params));
 		global $mongoDB;
@@ -78,6 +88,11 @@
 		}
 
 		foreach($dataset as $document) {
+			foreach(["created", "started", "finished"] as $key) {
+				if(isset($document[$key])) {
+					$document[$key] = date('Y-m-d H:i:s', intval(strval($document[$key])) / 1000);
+				}
+			}
 			$data['crawls'][] = $document;
 		}
 	}
@@ -90,6 +105,30 @@
 		foreach($dataset as $document) {
 			//array_push($data, $document['name']);
 			$data['directories'][] = $document['name'];
+		}
+	}
+
+	function getDup($params) {
+		error_log("getDup: ".json_encode($params));
+		$query = 'db.file.aggregate([ {$group: { _id: {MD5: "$checksum_MD5"}, cnt: {$sum: 1}, name: {$addToSet:"$name"}, path: {$addToSet: "$path"} } }, {$match: {cnt: {"$gt": 1}}}, {$sort: {cnt: -1} } ]);';
+		global $mongoDB;
+		global $data;
+
+
+		$dataset = $mongoDB->file->aggregate([
+			['$group' => [
+				"_id" => ["MD5" => '$checksum_MD5'],
+				"cnt" => ['$sum' => 1],
+				"name" =>  ['$addToSet' => '$name'],
+				"path" => ['$addToSet' => '$path']
+			]],
+			['$match' => ["cnt" => ['$gt' => 1]]],
+			['$sort' => ["cnt" => -1]]
+		]);
+
+		foreach($dataset as $document) {
+			//array_push($data, $document['name']);
+			$data['duplicates'][] = $document;
 		}
 	}
 
@@ -133,8 +172,8 @@
 
 	$functions = [
 		"getDir", "addDir", "remDir",
-		"getCrawl", "addCrawl", "remCrawl"
-
+		"getCrawl", "addCrawl", "remCrawl",
+		"getDup", "clrCrawlsAndDups"
 	];
 
 	switch($_SERVER['REQUEST_METHOD']) {
@@ -153,6 +192,7 @@
 		case 'POST':
 			$data['method'] = 'POST';
 			if(isset($_POST['function']) && in_array($_POST['function'], $functions)) {
+				error_log("Valid function in POST request: ".json_encode($_POST));
 				call_user_func($_POST['function'], $_POST);
 			} else {
 				$data['message'] = 'Error: Invalid data';

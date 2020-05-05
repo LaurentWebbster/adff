@@ -45,7 +45,7 @@
 			</div>
 			<div class="row">
 				<div class="col">
-					<h2 class="m-3">Scheduled for Crawling</h2>
+					<h2 class="m-3">Crawling &nbsp;<a ng-click="clrCrawlsAndDups()" href="javascript:void(0);" title="Click to clear all data" class="badge badge-primary badge-pill">Clear all data</a></h2>
 				</div>
 			</div>
 			<div class="row">
@@ -66,6 +66,26 @@
 							<td>{{ item.status }}</td>
 						</tr>
 					</table>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col">
+					<h2 class="m-1">&nbsp;</h2>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col">
+					<h2 class="m-3">Duplicates</h2>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col">
+					<div ng-repeat="dup in duplicates">
+						{{ dup.name }} &nbsp;-&nbsp; {{ dup.cnt }}
+						<ul>
+							<li ng-repeat="patt in dup.path">{{ patt }}</li>
+						</ul>
+					</div>
 				</div>
 			</div>
 		</div>
