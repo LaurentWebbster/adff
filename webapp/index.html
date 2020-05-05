@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, maximum-scale=1, minimum-scale=1" />
+		<title>ADFF - Advanced Duplicate File Finder</title>
+		<link rel="stylesheet" href="third-party/bootstrap.min.css">
+		<!--[if lt IE 9]>
+			<script src="third-party/html5shiv.js"></script>
+		<![endif]-->
+		<script src="third-party/jquery-3.5.0.min.js"></script>
+		<script src="third-party/angular.min.js"></script>
+	</head>
+	<body ng-app="adff" ng-controller="MainController">
+		<div class="container">
+			<div class="row">
+				<div class="col">
+					<h1 class="m-5">ADFF - Advanced Duplicate File Finder</h1>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col">
+					<h2 class="m-3">Manage Directories</h2>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col">
+					<ul class="list-group">
+						<li class="list-group-item d-flex justify-content-between align-items-center">
+							<input id="newDirectory" ng-model="newDirectory" type="text" name="value" style="width: 60%;" placeholder="Add a directory - /example/directory/path" />
+							<a ng-click="addDir()" href="javascript:void(0);" title="Click to add directory" class="badge badge-primary badge-pill">Add</a>
+						</li>
+						<li ng-repeat="item in directories | orderBy: ''" class="list-group-item d-flex justify-content-between align-items-center">
+							{{ item }}
+							<a ng-click="addCrawl(item)" href="javascript:void(0);" title="Click to crawl directory" class="badge badge-primary badge-pill">Crawl</a>
+							<a ng-click="rmDir(item)" href="javascript:void(0);" title="Click to delete directory" class="badge badge-primary badge-pill">Delete</a>
+						</li>
+					</ul>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col">
+					<h2 class="m-1">&nbsp;</h2>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col">
+					<h2 class="m-3">Crawling &nbsp;<a ng-click="clrCrawlsAndDups()" href="javascript:void(0);" title="Click to clear all data" class="badge badge-primary badge-pill">Clear all data</a></h2>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col">
+					<table class="table table-sm">
+						<tr>
+							<th>Path</th>
+							<th>Created</th>
+							<th>Started</th>
+							<th>Finished</th>
+							<th>Status</th>
+						</tr>
+						<tr ng-repeat="item in crawls | orderBy: created">
+							<td>{{ item.name }}</td>
+							<td>{{ item.created }}</td>
+							<td>{{ item.started }}</td>
+							<td>{{ item.finished }}</td>
+							<td>{{ item.status }}</td>
+						</tr>
+					</table>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col">
+					<h2 class="m-1">&nbsp;</h2>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col">
+					<h2 class="m-3">Duplicates</h2>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col">
+					<div ng-repeat="dup in duplicates">
+						{{ dup.name }} &nbsp;-&nbsp; {{ dup.cnt }}
+						<ul>
+							<li ng-repeat="patt in dup.path">{{ patt }}</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+		<script src="js/app.js"></script>
+	</body>
+</html>
